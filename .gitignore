@@ -1,0 +1,22 @@
+# Secrets
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Project outputs (optional: remove 'output/' if you want to commit sample reports)
+output/*
+!output/.gitkeep
+*.db
+data/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Status - Customer Review Analysis</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { font-size: 1.25rem; }
+        .status { margin: 1rem 0; padding: 1rem; background: #f5f5f5; border-radius: 4px; }
+        .status.pending, .status.processing { }
+        .status.completed { background: #e8f5e9; }
+        .status.failed { background: #ffebee; color: #c00; }
+        .error { color: #c00; margin-top: 0.5rem; }
+    </style>
+</head>
+<body>
+    <h1>Job Status</h1>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% else %}
+        <div class="status {{ job.status|lower }}" id="status-box">
+            <p><strong>Job #{{ job_id }}</strong></p>
+            <p id="status-text">Status: {{ job.status }}</p>
+            {% if job.error_message %}
+                <p class="error" id="error-msg">{{ job.error_message }}</p>
+            {% endif %}
+        </div>
+        {% if job.status == 'Completed' %}
+            <p>
+                <a href="{{ url_for('report', job_id=job_id) }}">View Report</a>
+                &nbsp;|&nbsp;
+                <a href="{{ url_for('index') }}">Back to search</a>
+            </p>
+        {% elif job.status == 'Failed' %}
+            <p><a href="{{ url_for('index') }}">Back to search</a></p>
+        {% else %}
+            <p>This page will refresh automatically. Processing may take about a minute.</p>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        (function() {
+            const jobId = {{ job_id }};
+            const statusBox = document.getElementById('status-box');
+            const statusText = document.getElementById('status-text');
+            const errorMsg = document.getElementById('error-msg');
+
+            function poll() {
+                fetch('/api/status/' + jobId)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.error) return;
+                        statusText.textContent = 'Status: ' + data.status;
+                        statusBox.className = 'status ' + data.status.toLowerCase();
+
+                        if (data.error_message) {
+                            if (!errorMsg) {
+                                const p = document.createElement('p');
+                                p.className = 'error';
+                                p.id = 'error-msg';
+                                p.textContent = data.error_message;
+                                statusBox.appendChild(p);
+                            } else {
+                                errorMsg.textContent = data.error_message;
+                            }
+                        }
+
+                        if (data.status === 'Completed' && data.report_url) {
+                            window.location.href = data.report_url;
+                            return;
+                        }
+                        if (data.status === 'Failed') {
+                            window.location.reload();
+                            return;
+                        }
+                        setTimeout(poll, 3000);
+                    })
+                    .catch(() => setTimeout(poll, 3000));
+            }
+
+            const job = {{ job|tojson if job else 'null' }};
+            if (job && job.status !== 'Completed' && job.status !== 'Failed') {
+                setTimeout(poll, 3000);
+            }
+        })();
+    </script>
+</body>
+</html>

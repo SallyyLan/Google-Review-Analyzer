@@ -1,0 +1,33 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5001:5001"
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - OUTPUT_DIR=/app/output
+      - DATABASE_PATH=/app/data/app.db
+    volumes:
+      - ./output:/app/output
+      - app-data:/app/data
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    command: rq worker --url redis://redis:6379/0
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - OUTPUT_DIR=/app/output
+      - DATABASE_PATH=/app/data/app.db
+    volumes:
+      - ./output:/app/output
+      - app-data:/app/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  app-data:

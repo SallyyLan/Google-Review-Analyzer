@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Review Analysis</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { font-size: 1.25rem; }
+        label { display: block; margin-top: 1rem; font-weight: 500; }
+        input[type="text"] { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+        button { margin-top: 1rem; padding: 0.5rem 1rem; background: #333; color: white; border: none; cursor: pointer; }
+        .error { color: #c00; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Customer Review Analysis</h1>
+    <p>Enter a Google Maps Place ID or URL to analyze reviews.</p>
+    <form method="post" action="{{ url_for('analyze') }}">
+        <label for="place_id">Place ID or URL</label>
+        <input type="text" id="place_id" name="place_id" placeholder="ChIJ... or https://www.google.com/maps/place/..." required>
+        <p class="page-subtitle" style="font-size: 0.85rem; color: #666; margin-top: 0.35rem;">Use a full Google Maps place URL or a Place ID (ChIJ...). If a URL returns no results, try the Place ID from the URL.</p>
+        {% if error %}<p class="error">{{ error }}</p>{% endif %}
+        <button type="submit">Analyze</button>
+    </form>
+</body>
+</html>
